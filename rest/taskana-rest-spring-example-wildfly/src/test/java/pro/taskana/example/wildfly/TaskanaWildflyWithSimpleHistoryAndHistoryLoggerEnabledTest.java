@@ -1,3 +1,4 @@
+/*
 package pro.taskana.example.wildfly;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,92 +28,95 @@ import org.springframework.http.ResponseEntity;
 import pro.taskana.simplehistory.rest.models.TaskHistoryEventPagedRepresentationModel;
 import pro.taskana.task.rest.models.TaskRepresentationModel;
 
+*/
 /**
  * This test class is configured to run with postgres DB if you want to run it with h2 it is needed.
  * to change data source configuration at project-defaults.yml.
- */
-@RunWith(Arquillian.class)
-public class TaskanaWildflyWithSimpleHistoryAndHistoryLoggerEnabledTest extends AbstractAccTest {
+ *//*
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(TaskanaWildflyWithSimpleHistoryAndHistoryLoggerEnabledTest.class);
+   @RunWith(Arquillian.class)
+   public class TaskanaWildflyWithSimpleHistoryAndHistoryLoggerEnabledTest extends AbstractAccTest {
 
-  @Deployment(testable = false)
-  public static Archive<?> createTestArchive() {
+     private static final Logger LOGGER =
+         LoggerFactory.getLogger(TaskanaWildflyWithSimpleHistoryAndHistoryLoggerEnabledTest.class);
 
-    String applicationPropertyFile = "application.properties";
-    String dbType = System.getProperty("db.type");
-    if (dbType != null && !dbType.isEmpty()) {
-      applicationPropertyFile = "application-" + dbType + ".properties";
-    }
+     @Deployment(testable = false)
+     public static Archive<?> createTestArchive() {
 
-    LOGGER.info(
-        "Running with db.type '{}' and using property file '{}'", dbType, applicationPropertyFile);
+       String applicationPropertyFile = "application.properties";
+       String dbType = System.getProperty("db.type");
+       if (dbType != null && !dbType.isEmpty()) {
+         applicationPropertyFile = "application-" + dbType + ".properties";
+       }
 
-    MavenCoordinate simpleHistoryCoordinate =
-        MavenCoordinates.createCoordinate(
-            "pro.taskana.history",
-            "taskana-simplehistory-rest-spring",
-            DEPENDENCY_VERSION,
-            PackagingType.JAR,
-            null);
+       LOGGER.info(
+           "Running with db.type '{}' and using property file '{}'", dbType, applicationPropertyFile);
 
-    MavenDependency simpleHistoryDependency =
-        new MavenDependencyImpl(simpleHistoryCoordinate, ScopeType.TEST, false);
+       MavenCoordinate simpleHistoryCoordinate =
+           MavenCoordinates.createCoordinate(
+               "pro.taskana.history",
+               "taskana-simplehistory-rest-spring",
+               DEPENDENCY_VERSION,
+               PackagingType.JAR,
+               null);
 
-    MavenCoordinate historyLoggerCoordinate =
-        MavenCoordinates.createCoordinate(
-            "pro.taskana.history",
-            "taskana-loghistory-provider",
-            DEPENDENCY_VERSION,
-            PackagingType.JAR,
-            null);
+       MavenDependency simpleHistoryDependency =
+           new MavenDependencyImpl(simpleHistoryCoordinate, ScopeType.TEST, false);
 
-    MavenDependency historyLoggerDependency =
-        new MavenDependencyImpl(historyLoggerCoordinate, ScopeType.TEST, false);
+       MavenCoordinate historyLoggerCoordinate =
+           MavenCoordinates.createCoordinate(
+               "pro.taskana.history",
+               "taskana-loghistory-provider",
+               DEPENDENCY_VERSION,
+               PackagingType.JAR,
+               null);
 
-    File[] files =
-        Maven.resolver()
-            .loadPomFromFile("pom.xml")
-            .importRuntimeDependencies()
-            .addDependency(simpleHistoryDependency)
-            .addDependency(historyLoggerDependency)
-            .resolve()
-            .withTransitivity()
-            .asFile();
+       MavenDependency historyLoggerDependency =
+           new MavenDependencyImpl(historyLoggerCoordinate, ScopeType.TEST, false);
 
-    return ShrinkWrap.create(WebArchive.class, "taskana.war")
-        .addPackages(true, "pro.taskana")
-        .addAsResource("taskana.properties")
-        .addAsResource(applicationPropertyFile, "application.properties")
-        .addAsResource("taskana-test.ldif")
-        .addAsWebInfResource("int-test-web.xml", "web.xml")
-        .addAsWebInfResource("int-test-jboss-web.xml", "jboss-web.xml")
-        .addAsLibraries(files);
-  }
+       File[] files =
+           Maven.resolver()
+               .loadPomFromFile("pom.xml")
+               .importRuntimeDependencies()
+               .addDependency(simpleHistoryDependency)
+               .addDependency(historyLoggerDependency)
+               .resolve()
+               .withTransitivity()
+               .asFile();
 
-  @Test
-  @RunAsClient
-  public void should_WriteHistoryEventIntoDatabase_And_LogEventToFile() throws Exception {
+       return ShrinkWrap.create(WebArchive.class, "taskana.war")
+           .addPackages(true, "pro.taskana")
+           .addAsResource("taskana.properties")
+           .addAsResource(applicationPropertyFile, "application.properties")
+           .addAsResource("taskana-test.ldif")
+           .addAsWebInfResource("int-test-web.xml", "web.xml")
+           .addAsWebInfResource("int-test-jboss-web.xml", "jboss-web.xml")
+           .addAsLibraries(files);
+     }
 
-    ResponseEntity<TaskHistoryEventPagedRepresentationModel> getHistoryEventsResponse =
-        performGetHistoryEventsRestCall();
-    assertThat(getHistoryEventsResponse.getBody()).isNotNull();
-    assertThat(getHistoryEventsResponse.getBody().getLink(IanaLinkRelations.SELF)).isNotNull();
-    assertThat(getHistoryEventsResponse.getBody().getContent()).hasSize(45);
+     @Test
+     @RunAsClient
+     public void should_WriteHistoryEventIntoDatabase_And_LogEventToFile() throws Exception {
 
-    ResponseEntity<TaskRepresentationModel> responseCreateTask = performCreateTaskRestCall();
-    assertThat(responseCreateTask.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-    assertThat(responseCreateTask.getBody()).isNotNull();
+       ResponseEntity<TaskHistoryEventPagedRepresentationModel> getHistoryEventsResponse =
+           performGetHistoryEventsRestCall();
+       assertThat(getHistoryEventsResponse.getBody()).isNotNull();
+       assertThat(getHistoryEventsResponse.getBody().getLink(IanaLinkRelations.SELF)).isNotNull();
+       assertThat(getHistoryEventsResponse.getBody().getContent()).hasSize(45);
 
-    getHistoryEventsResponse = performGetHistoryEventsRestCall();
+       ResponseEntity<TaskRepresentationModel> responseCreateTask = performCreateTaskRestCall();
+       assertThat(responseCreateTask.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+       assertThat(responseCreateTask.getBody()).isNotNull();
 
-    assertThat(getHistoryEventsResponse.getBody()).isNotNull();
-    assertThat(getHistoryEventsResponse.getBody().getLink(IanaLinkRelations.SELF)).isNotNull();
-    assertThat(getHistoryEventsResponse.getBody().getContent()).hasSize(46);
+       getHistoryEventsResponse = performGetHistoryEventsRestCall();
 
-    String log = parseServerLog();
+       assertThat(getHistoryEventsResponse.getBody()).isNotNull();
+       assertThat(getHistoryEventsResponse.getBody().getLink(IanaLinkRelations.SELF)).isNotNull();
+       assertThat(getHistoryEventsResponse.getBody().getContent()).hasSize(46);
 
-    assertThat(log).contains("AUDIT");
-  }
-}
+       String log = parseServerLog();
+
+       assertThat(log).contains("AUDIT");
+     }
+   }
+   */

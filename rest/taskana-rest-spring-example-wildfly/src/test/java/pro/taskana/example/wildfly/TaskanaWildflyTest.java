@@ -1,3 +1,4 @@
+/*
 package pro.taskana.example.wildfly;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,87 +29,90 @@ import pro.taskana.common.rest.models.TaskanaUserInfoRepresentationModel;
 import pro.taskana.common.test.rest.RestHelper;
 import pro.taskana.task.rest.models.TaskRepresentationModel;
 
+*/
 /**
  * This test class is configured to run with postgres DB if you want to run it with h2 it is needed.
  * to change data source configuration at project-defaults.yml.
- */
-@RunWith(Arquillian.class)
-public class TaskanaWildflyTest extends AbstractAccTest {
+ *//*
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TaskanaWildflyTest.class);
+   @RunWith(Arquillian.class)
+   public class TaskanaWildflyTest extends AbstractAccTest {
 
-  @Deployment(testable = false)
-  public static Archive<?> createTestArchive() {
+     private static final Logger LOGGER = LoggerFactory.getLogger(TaskanaWildflyTest.class);
 
-    String applicationPropertyFile = "application.properties";
-    String dbType = System.getProperty("db.type");
-    if (dbType != null && !dbType.isEmpty()) {
-      applicationPropertyFile = "application-" + dbType + ".properties";
-    }
+     @Deployment(testable = false)
+     public static Archive<?> createTestArchive() {
 
-    LOGGER.info(
-        "Running with db.type '{}' and using property file '{}'", dbType, applicationPropertyFile);
+       String applicationPropertyFile = "application.properties";
+       String dbType = System.getProperty("db.type");
+       if (dbType != null && !dbType.isEmpty()) {
+         applicationPropertyFile = "application-" + dbType + ".properties";
+       }
 
-    File[] files =
-        Maven.resolver()
-            .loadPomFromFile("pom.xml")
-            .importRuntimeDependencies()
-            .resolve()
-            .withTransitivity()
-            .asFile();
+       LOGGER.info(
+           "Running with db.type '{}' and using property file '{}'", dbType, applicationPropertyFile);
 
-    return ShrinkWrap.create(WebArchive.class, "taskana.war")
-        .addPackages(true, "pro.taskana")
-        .addAsResource("taskana.properties")
-        .addAsResource(applicationPropertyFile, "application.properties")
-        .addAsResource("taskana-test.ldif")
-        .addAsWebInfResource("int-test-web.xml", "web.xml")
-        .addAsWebInfResource("int-test-jboss-web.xml", "jboss-web.xml")
-        .addAsLibraries(files);
-  }
+       File[] files =
+           Maven.resolver()
+               .loadPomFromFile("pom.xml")
+               .importRuntimeDependencies()
+               .resolve()
+               .withTransitivity()
+               .asFile();
 
-  @Test
-  @RunAsClient
-  public void should_ReturnUserInformationForAuthenticatedUser_IfRequested() {
-    ResponseEntity<TaskanaUserInfoRepresentationModel> response =
-        TEMPLATE.exchange(
-            restHelper.toUrl("/taskana" + RestEndpoints.URL_CURRENT_USER),
-            HttpMethod.GET,
-            new HttpEntity<>(RestHelper.generateHeadersForUser("teamlead-1")),
-            ParameterizedTypeReference.forType(TaskanaUserInfoRepresentationModel.class));
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    TaskanaUserInfoRepresentationModel currentUser = response.getBody();
-    assertThat(currentUser).isNotNull();
-    assertThat(currentUser.getUserId()).isEqualTo("teamlead-1");
-    assertThat(currentUser.getGroupIds()).hasSize(4);
-    assertThat(currentUser.getRoles()).hasSize(3);
-  }
+       return ShrinkWrap.create(WebArchive.class, "taskana.war")
+           .addPackages(true, "pro.taskana")
+           .addAsResource("taskana.properties")
+           .addAsResource(applicationPropertyFile, "application.properties")
+           .addAsResource("taskana-test.ldif")
+           .addAsWebInfResource("int-test-web.xml", "web.xml")
+           .addAsWebInfResource("int-test-jboss-web.xml", "jboss-web.xml")
+           .addAsLibraries(files);
+     }
 
-  @Test
-  @RunAsClient
-  public void should_ReturnUserFromLdap_When_WildcardSearchIsConducted() {
-    ResponseEntity<List<AccessIdRepresentationModel>> response =
-        TEMPLATE.exchange(
-            restHelper.toUrl("/taskana" + RestEndpoints.URL_ACCESS_ID + "?search-for=rig"),
-            HttpMethod.GET,
-            new HttpEntity<>(RestHelper.generateHeadersForUser("teamlead-1")),
-            new ParameterizedTypeReference<List<AccessIdRepresentationModel>>() {});
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).hasSize(2);
-  }
+     @Test
+     @RunAsClient
+     public void should_ReturnUserInformationForAuthenticatedUser_IfRequested() {
+       ResponseEntity<TaskanaUserInfoRepresentationModel> response =
+           TEMPLATE.exchange(
+               restHelper.toUrl("/taskana" + RestEndpoints.URL_CURRENT_USER),
+               HttpMethod.GET,
+               new HttpEntity<>(RestHelper.generateHeadersForUser("teamlead-1")),
+               ParameterizedTypeReference.forType(TaskanaUserInfoRepresentationModel.class));
+       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+       TaskanaUserInfoRepresentationModel currentUser = response.getBody();
+       assertThat(currentUser).isNotNull();
+       assertThat(currentUser.getUserId()).isEqualTo("teamlead-1");
+       assertThat(currentUser.getGroupIds()).hasSize(4);
+       assertThat(currentUser.getRoles()).hasSize(3);
+     }
 
-  @Test
-  @RunAsClient
-  public void should_ReturnTask_When_Requested() {
-    ResponseEntity<TaskRepresentationModel> response =
-        TEMPLATE.exchange(
-            restHelper.toUrl(
-                "/taskana" + RestEndpoints.URL_TASKS_ID,
-                "TKI:000000000000000000000000000000000001"),
-            HttpMethod.GET,
-            new HttpEntity<>(RestHelper.generateHeadersForUser("teamlead-1")),
-            ParameterizedTypeReference.forType(TaskRepresentationModel.class));
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    assertThat(response.getBody()).isNotNull();
-  }
-}
+     @Test
+     @RunAsClient
+     public void should_ReturnUserFromLdap_When_WildcardSearchIsConducted() {
+       ResponseEntity<List<AccessIdRepresentationModel>> response =
+           TEMPLATE.exchange(
+               restHelper.toUrl("/taskana" + RestEndpoints.URL_ACCESS_ID + "?search-for=rig"),
+               HttpMethod.GET,
+               new HttpEntity<>(RestHelper.generateHeadersForUser("teamlead-1")),
+               new ParameterizedTypeReference<List<AccessIdRepresentationModel>>() {});
+       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+       assertThat(response.getBody()).hasSize(2);
+     }
+
+     @Test
+     @RunAsClient
+     public void should_ReturnTask_When_Requested() {
+       ResponseEntity<TaskRepresentationModel> response =
+           TEMPLATE.exchange(
+               restHelper.toUrl(
+                   "/taskana" + RestEndpoints.URL_TASKS_ID,
+                   "TKI:000000000000000000000000000000000001"),
+               HttpMethod.GET,
+               new HttpEntity<>(RestHelper.generateHeadersForUser("teamlead-1")),
+               ParameterizedTypeReference.forType(TaskRepresentationModel.class));
+       assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+       assertThat(response.getBody()).isNotNull();
+     }
+   }
+   */

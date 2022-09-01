@@ -1,3 +1,4 @@
+/*
 package pro.taskana.common.internal;
 
 import java.sql.Connection;
@@ -12,6 +13,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.wildfly.swarm.undertow.WARArchive;
 
@@ -80,3 +82,4 @@ public class TaskanaProducersTest {
         "SA");
   }
 }
+*/
